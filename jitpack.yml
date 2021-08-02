@@ -1,4 +1,6 @@
+jdk:
+  - openjdk11
 before_install:
-   - sdk install java 11.0.10-open
-   - sdk use java 11.0.10-open
+   - sdk install java 11.0.12-open
+   - sdk use java 11.0.12-open
    - echo "y" | $ANDROID_HOME/tools/bin/sdkmanager "cmake;3.6.4111459"
