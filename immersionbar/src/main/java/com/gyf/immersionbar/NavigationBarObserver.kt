@@ -3,7 +3,6 @@ package com.gyf.immersionbar
 import android.app.Application
 import android.database.ContentObserver
 import android.net.Uri
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
@@ -15,19 +14,19 @@ import java.util.*
  * @author geyifeng
  * @date 2019/4/10 6:02 PM
  */
-internal object NavigationBarObserver :ContentObserver(Handler(Looper.getMainLooper())) {
+internal object NavigationBarObserver : ContentObserver(Handler(Looper.getMainLooper())) {
     private var mListeners: ArrayList<OnNavigationBarListener>? = null
     private var mApplication: Application? = null
     private var mIsRegister = false
     fun register(application: Application?) {
         mApplication = application
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && mApplication != null && mApplication!!.contentResolver != null && !mIsRegister) {
+        if (mApplication != null && mApplication!!.contentResolver != null && !mIsRegister) {
             var uri: Uri? = null
             if (OSUtils.isMIUI) {
                 uri = Settings.Global.getUriFor(Constants.IMMERSION_MIUI_NAVIGATION_BAR_HIDE_SHOW)
             } else if (OSUtils.isEMUI) {
                 uri =
-                    if (OSUtils.isEMUI3_x || Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                    if (OSUtils.isEMUI3_x) {
                         Settings.System.getUriFor(Constants.IMMERSION_EMUI_NAVIGATION_BAR_HIDE_SHOW)
                     } else {
                         Settings.Global.getUriFor(Constants.IMMERSION_EMUI_NAVIGATION_BAR_HIDE_SHOW)
@@ -42,7 +41,7 @@ internal object NavigationBarObserver :ContentObserver(Handler(Looper.getMainLoo
 
     override fun onChange(selfChange: Boolean) {
         super.onChange(selfChange)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && mApplication != null && mApplication!!.contentResolver != null && mListeners != null && !mListeners!!.isEmpty()) {
+        if (mApplication != null && mApplication!!.contentResolver != null && mListeners != null && !mListeners!!.isEmpty()) {
             var show = 0
             if (OSUtils.isMIUI) {
                 show = Settings.Global.getInt(
@@ -52,7 +51,7 @@ internal object NavigationBarObserver :ContentObserver(Handler(Looper.getMainLoo
                 )
             } else if (OSUtils.isEMUI) {
                 show =
-                    if (OSUtils.isEMUI3_x || Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                    if (OSUtils.isEMUI3_x) {
                         Settings.System.getInt(
                             mApplication!!.contentResolver,
                             Constants.IMMERSION_EMUI_NAVIGATION_BAR_HIDE_SHOW,

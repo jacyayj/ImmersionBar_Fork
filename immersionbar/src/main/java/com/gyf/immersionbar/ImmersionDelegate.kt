@@ -20,11 +20,11 @@ internal class ImmersionDelegate : Runnable {
 
     constructor(o: Any?) {
         if (o is AppCompatActivity) {
-            if (mImmersionBar == null) {
+            if (::mImmersionBar.isInitialized.not()) {
                 mImmersionBar = ImmersionBar(o as AppCompatActivity?)
             }
         } else if (o is Fragment) {
-            if (mImmersionBar == null) {
+            if (::mImmersionBar.isInitialized.not()) {
                 mImmersionBar = if (o is DialogFragment) {
                     ImmersionBar(dialogFragment = o)
                 } else {
@@ -67,7 +67,7 @@ internal class ImmersionDelegate : Runnable {
      * @param configuration the configuration
      */
     private fun barChanged(configuration: Configuration) {
-        if (mImmersionBar != null && mImmersionBar!!.initialized() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+        if ( mImmersionBar.initialized()) {
             mOnBarListener = mImmersionBar.barParams.onBarListener
             if (mOnBarListener != null) {
                 val activity = mImmersionBar.activity

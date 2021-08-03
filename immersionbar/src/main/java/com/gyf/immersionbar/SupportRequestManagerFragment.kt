@@ -12,47 +12,46 @@ import androidx.fragment.app.Fragment
  * @date 2019/4/11 6:43 PM
  */
 class SupportRequestManagerFragment : Fragment() {
-    private var mDelegate: ImmersionDelegate? = null
-    operator fun get(o: Any?): ImmersionBar? {
-        if (mDelegate == null) {
+    private lateinit var mDelegate: ImmersionDelegate
+    operator fun get(o: Any?): ImmersionBar {
+        if (::mDelegate.isInitialized.not()) {
             mDelegate = ImmersionDelegate(o)
         }
-        return mDelegate!!.get()
+        return mDelegate.get()
     }
 
-    operator fun get(activity: AppCompatActivity?, dialog: Dialog?): ImmersionBar? {
-        if (mDelegate == null) {
+    operator fun get(activity: AppCompatActivity?, dialog: Dialog?): ImmersionBar {
+        if (::mDelegate.isInitialized.not()) {
             mDelegate = ImmersionDelegate(activity, dialog)
         }
-        return mDelegate!!.get()
+        return mDelegate.get()
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        if (mDelegate != null) {
-            mDelegate!!.onActivityCreated(resources.configuration)
+        if (::mDelegate.isInitialized.not()) {
+            mDelegate.onActivityCreated(resources.configuration)
         }
     }
 
     override fun onResume() {
         super.onResume()
-        if (mDelegate != null) {
-            mDelegate!!.onResume()
+        if (::mDelegate.isInitialized.not()) {
+            mDelegate.onResume()
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        if (mDelegate != null) {
-            mDelegate!!.onDestroy()
-            mDelegate = null
+        if (::mDelegate.isInitialized.not()) {
+            mDelegate.onDestroy()
         }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        if (mDelegate != null) {
-            mDelegate!!.onConfigurationChanged(newConfig)
+        if (::mDelegate.isInitialized.not()) {
+            mDelegate.onConfigurationChanged(newConfig)
         }
     }
 }

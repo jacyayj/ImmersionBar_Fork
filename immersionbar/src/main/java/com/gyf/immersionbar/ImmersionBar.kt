@@ -152,7 +152,7 @@ class ImmersionBar(
      * 通过上面配置后初始化后方可成功调用
      */
     fun init() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && barParams.barEnable) {
+        if (barParams.barEnable) {
             //更新Bar的参数
             updateBarParams()
             //设置沉浸式
@@ -195,7 +195,7 @@ class ImmersionBar(
     }
 
     fun onConfigurationChanged(newConfig: Configuration) {
-        if (OSUtils.isEMUI3_x || Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+        if (OSUtils.isEMUI3_x) {
             if (mInitialized && !mIsFragment && barParams.navigationBarWithKitkatEnable) {
                 init()
             } else {
@@ -212,19 +212,17 @@ class ImmersionBar(
      */
     private fun updateBarParams() {
         adjustDarkModeParams()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            //获得Bar相关信息
-            updateBarConfig()
-            if (mParentBar != null) {
-                //如果在Fragment中使用，让Activity同步Fragment的BarParams参数
-                if (mIsFragment) {
-                    mParentBar!!.barParams = barParams
-                }
-                //如果dialog里设置了keyboardEnable为true，则Activity中所设置的keyboardEnable为false
-                if (mIsDialog) {
-                    if (mParentBar!!.mKeyboardTempEnable) {
-                        mParentBar!!.barParams.keyboardEnable = false
-                    }
+        //获得Bar相关信息
+        updateBarConfig()
+        if (mParentBar != null) {
+            //如果在Fragment中使用，让Activity同步Fragment的BarParams参数
+            if (mIsFragment) {
+                mParentBar!!.barParams = barParams
+            }
+            //如果dialog里设置了keyboardEnable为true，则Activity中所设置的keyboardEnable为false
+            if (mIsDialog) {
+                if (mParentBar!!.mKeyboardTempEnable) {
+                    mParentBar!!.barParams.keyboardEnable = false
                 }
             }
         }
@@ -236,7 +234,7 @@ class ImmersionBar(
     fun setBar() {
         //防止系统栏隐藏时内容区域大小发生变化
         var uiFlags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && !OSUtils.isEMUI3_x) {
+        if (!OSUtils.isEMUI3_x) {
             //适配刘海屏
             fitsNotchScreen()
             //初始化5.0以上，包含5.0
@@ -383,7 +381,8 @@ class ImmersionBar(
      * 设置一个可以自定义颜色的状态栏
      */
     private fun setupStatusBarView() {
-        var statusBarView = mDecorView!!.findViewById<View>(Constants.IMMERSION_ID_STATUS_BAR_VIEW)
+        var statusBarView =
+            mDecorView!!.findViewById<View>(Constants.IMMERSION_ID_STATUS_BAR_VIEW)
         if (statusBarView == null) {
             statusBarView = View(activity)
             val params = FrameLayout.LayoutParams(
@@ -457,13 +456,17 @@ class ImmersionBar(
      */
     private fun adjustDarkModeParams() {
         if (barParams.autoStatusBarDarkModeEnable && barParams.statusBarColor != Color.TRANSPARENT) {
-            val statusBarDarkFont = barParams.statusBarColor > Constants.IMMERSION_BOUNDARY_COLOR
+            val statusBarDarkFont =
+                barParams.statusBarColor > Constants.IMMERSION_BOUNDARY_COLOR
             statusBarDarkFont(statusBarDarkFont, barParams.autoStatusBarDarkModeAlpha)
         }
         if (barParams.autoNavigationBarDarkModeEnable && barParams.navigationBarColor != Color.TRANSPARENT) {
             val navigationBarDarkIcon =
                 barParams.navigationBarColor > Constants.IMMERSION_BOUNDARY_COLOR
-            navigationBarDarkIcon(navigationBarDarkIcon, barParams.autoNavigationBarDarkModeAlpha)
+            navigationBarDarkIcon(
+                navigationBarDarkIcon,
+                barParams.autoNavigationBarDarkModeAlpha
+            )
         }
     }
 
@@ -476,20 +479,18 @@ class ImmersionBar(
      */
     private fun hideBar(uiFlags: Int): Int {
         var uiFlags = uiFlags
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            when (barParams.barHide) {
-                BarHide.FLAG_HIDE_BAR -> uiFlags =
-                    uiFlags or (View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            or View.INVISIBLE)
-                BarHide.FLAG_HIDE_STATUS_BAR -> uiFlags =
-                    uiFlags or (View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.INVISIBLE)
-                BarHide.FLAG_HIDE_NAVIGATION_BAR -> uiFlags =
-                    uiFlags or (View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)
-                BarHide.FLAG_SHOW_BAR -> uiFlags = uiFlags or View.SYSTEM_UI_FLAG_VISIBLE
-                else -> {
-                }
+        when (barParams.barHide) {
+            BarHide.FLAG_HIDE_BAR -> uiFlags =
+                uiFlags or (View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.INVISIBLE)
+            BarHide.FLAG_HIDE_STATUS_BAR -> uiFlags =
+                uiFlags or (View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.INVISIBLE)
+            BarHide.FLAG_HIDE_NAVIGATION_BAR -> uiFlags =
+                uiFlags or (View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)
+            BarHide.FLAG_SHOW_BAR -> uiFlags = uiFlags or View.SYSTEM_UI_FLAG_VISIBLE
+            else -> {
             }
         }
         return uiFlags or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
@@ -499,17 +500,15 @@ class ImmersionBar(
      * 修正界面显示
      */
     private fun fitsWindows() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && !OSUtils.isEMUI3_x) {
-                //android 5.0以上解决状态栏和布局重叠问题
-                fitsWindowsAboveLOLLIPOP()
-            } else {
-                //android 5.0以下解决状态栏和布局重叠问题
-                fitsWindowsBelowLOLLIPOP()
-            }
-            //适配状态栏与布局重叠问题
-            fitsLayoutOverlap()
+        if (!OSUtils.isEMUI3_x) {
+            //android 5.0以上解决状态栏和布局重叠问题
+            fitsWindowsAboveLOLLIPOP()
+        } else {
+            //android 5.0以下解决状态栏和布局重叠问题
+            fitsWindowsBelowLOLLIPOP()
         }
+        //适配状态栏与布局重叠问题
+        fitsLayoutOverlap()
     }
 
     /**
@@ -774,30 +773,15 @@ class ImmersionBar(
      * Keyboard enable.
      */
     private fun fitsKeyboard() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            if (!mIsFragment) {
-                if (barParams.keyboardEnable) {
-                    if (mFitsKeyboard == null) {
-                        mFitsKeyboard = FitsKeyboard(this)
-                    }
-                    mFitsKeyboard!!.enable(barParams.keyboardMode)
-                } else {
-                    if (mFitsKeyboard != null) {
-                        mFitsKeyboard!!.disable()
-                    }
+        if (!mIsFragment) {
+            if (barParams.keyboardEnable) {
+                if (mFitsKeyboard == null) {
+                    mFitsKeyboard = FitsKeyboard(this)
                 }
+                mFitsKeyboard!!.enable(barParams.keyboardMode)
             } else {
-                if (mParentBar != null) {
-                    if (mParentBar!!.barParams.keyboardEnable) {
-                        if (mParentBar!!.mFitsKeyboard == null) {
-                            mParentBar!!.mFitsKeyboard = FitsKeyboard(mParentBar!!)
-                        }
-                        mParentBar!!.mFitsKeyboard!!.enable(mParentBar!!.barParams.keyboardMode)
-                    } else {
-                        if (mParentBar!!.mFitsKeyboard != null) {
-                            mParentBar!!.mFitsKeyboard!!.disable()
-                        }
-                    }
+                if (mFitsKeyboard != null) {
+                    mFitsKeyboard!!.disable()
                 }
             }
         }
@@ -1067,7 +1051,12 @@ class ImmersionBar(
      * @return the immersion bar
      */
     fun navigationBarColor(@ColorRes navigationBarColor: Int): ImmersionBar {
-        return this.navigationBarColorInt(ContextCompat.getColor(activity!!, navigationBarColor))
+        return this.navigationBarColorInt(
+            ContextCompat.getColor(
+                activity!!,
+                navigationBarColor
+            )
+        )
     }
 
     /**
@@ -1216,7 +1205,10 @@ class ImmersionBar(
         @ColorRes barColor: Int,
         @FloatRange(from = 0.0, to = 1.0) barAlpha: Float
     ): ImmersionBar {
-        return this.barColorInt(ContextCompat.getColor(activity!!, barColor), barColor.toFloat())
+        return this.barColorInt(
+            ContextCompat.getColor(activity!!, barColor),
+            barColor.toFloat()
+        )
     }
 
     /**
@@ -1492,8 +1484,14 @@ class ImmersionBar(
      * @param viewColorAfterTransform the view color after transform
      * @return the immersion bar
      */
-    fun addViewSupportTransformColor(view: View?, viewColorAfterTransform: String?): ImmersionBar {
-        return this.addViewSupportTransformColorInt(view, Color.parseColor(viewColorAfterTransform))
+    fun addViewSupportTransformColor(
+        view: View?,
+        viewColorAfterTransform: String?
+    ): ImmersionBar {
+        return this.addViewSupportTransformColorInt(
+            view,
+            Color.parseColor(viewColorAfterTransform)
+        )
     }
 
     /**
@@ -1620,7 +1618,12 @@ class ImmersionBar(
      * @param navigationAlpha the navigation alpha
      * @return the immersion bar
      */
-    fun navigationBarAlpha(@FloatRange(from = 0.0, to = 1.0) navigationAlpha: Float): ImmersionBar {
+    fun navigationBarAlpha(
+        @FloatRange(
+            from = 0.0,
+            to = 1.0
+        ) navigationAlpha: Float
+    ): ImmersionBar {
         barParams.navigationBarAlpha = navigationAlpha
         barParams.navigationBarTempAlpha = navigationAlpha
         return this
@@ -2037,7 +2040,10 @@ class ImmersionBar(
      * @return the immersion bar
      */
     @JvmOverloads
-    fun titleBar(@IdRes viewId: Int, statusBarColorTransformEnable: Boolean = true): ImmersionBar {
+    fun titleBar(
+        @IdRes viewId: Int,
+        statusBarColorTransformEnable: Boolean = true
+    ): ImmersionBar {
         return fragment?.view?.let {
             titleBar(
                 fragment.requireView().findViewById(viewId),
@@ -2338,7 +2344,7 @@ class ImmersionBar(
          * @param activity the activity
          * @return the immersion bar
          */
-        fun with(activity: AppCompatActivity): ImmersionBar? {
+        fun with(activity: AppCompatActivity): ImmersionBar {
             return RequestManagerRetriever[activity]
         }
 
@@ -2349,7 +2355,7 @@ class ImmersionBar(
          * @param fragment the fragment
          * @return the immersion bar
          */
-        fun with(fragment: Fragment): ImmersionBar? {
+        fun with(fragment: Fragment): ImmersionBar {
             return RequestManagerRetriever[fragment, false]
         }
 
@@ -2361,7 +2367,7 @@ class ImmersionBar(
          * @param isOnly   the is only fragment实例对象是否唯一，默认是false，不唯一，isOnly影响tag以何种形式生成
          * @return the immersion bar
          */
-        fun with(fragment: Fragment, isOnly: Boolean): ImmersionBar? {
+        fun with(fragment: Fragment, isOnly: Boolean): ImmersionBar {
             return RequestManagerRetriever[fragment, isOnly]
         }
 
@@ -2373,7 +2379,7 @@ class ImmersionBar(
          * @param dialogFragment the dialog fragment
          * @return the immersion bar
          */
-        fun with(dialogFragment: DialogFragment): ImmersionBar? {
+        fun with(dialogFragment: DialogFragment): ImmersionBar {
             return RequestManagerRetriever[dialogFragment, false]
         }
 
@@ -2385,7 +2391,7 @@ class ImmersionBar(
          * @param dialog   the dialog
          * @return the immersion bar
          */
-        fun with(activity: AppCompatActivity, dialog: Dialog): ImmersionBar? {
+        fun with(activity: AppCompatActivity, dialog: Dialog): ImmersionBar {
             return RequestManagerRetriever[activity, dialog]
         }
 
@@ -2449,55 +2455,49 @@ class ImmersionBar(
          */
         fun setTitleBar(activity: AppCompatActivity?, fixHeight: Int, vararg view: View?) {
             var fixHeight = fixHeight
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                if (activity == null) {
-                    return
+            if (activity == null) {
+                return
+            }
+            if (fixHeight < 0) {
+                fixHeight = 0
+            }
+            for (v in view) {
+                if (v == null) {
+                    continue
                 }
-                if (fixHeight < 0) {
-                    fixHeight = 0
-                }
-                for (v in view) {
-                    if (v == null) {
-                        continue
+                val statusBarHeight = fixHeight
+                val fitsHeight = v.getTag(R.id.immersion_fits_layout_overlap) as Int
+                if (fitsHeight != statusBarHeight) {
+                    v.setTag(R.id.immersion_fits_layout_overlap, statusBarHeight)
+                    var layoutParams = v.layoutParams
+                    if (layoutParams == null) {
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                        )
                     }
-                    val statusBarHeight = fixHeight
-                    var fitsHeight = v.getTag(R.id.immersion_fits_layout_overlap) as Int
-                    if (fitsHeight == null) {
-                        fitsHeight = 0
-                    }
-                    if (fitsHeight != statusBarHeight) {
-                        v.setTag(R.id.immersion_fits_layout_overlap, statusBarHeight)
-                        var layoutParams = v.layoutParams
-                        if (layoutParams == null) {
-                            layoutParams = ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT
-                            )
-                        }
-                        if (layoutParams.height == ViewGroup.LayoutParams.WRAP_CONTENT ||
-                            layoutParams.height == ViewGroup.LayoutParams.MATCH_PARENT
-                        ) {
-                            val finalLayoutParams = layoutParams
-                            val finalFitsHeight = fitsHeight
-                            v.post(Runnable {
-                                finalLayoutParams.height =
-                                    v.height + statusBarHeight - finalFitsHeight
-                                v.setPadding(
-                                    v.paddingLeft,
-                                    v.paddingTop + statusBarHeight - finalFitsHeight,
-                                    v.paddingRight,
-                                    v.paddingBottom
-                                )
-                                v.layoutParams = finalLayoutParams
-                            })
-                        } else {
-                            layoutParams.height += statusBarHeight - fitsHeight
+                    if (layoutParams.height == ViewGroup.LayoutParams.WRAP_CONTENT ||
+                        layoutParams.height == ViewGroup.LayoutParams.MATCH_PARENT
+                    ) {
+                        val finalLayoutParams = layoutParams
+                        v.post(Runnable {
+                            finalLayoutParams.height =
+                                v.height + statusBarHeight - fitsHeight
                             v.setPadding(
-                                v.paddingLeft, v.paddingTop + statusBarHeight - fitsHeight,
-                                v.paddingRight, v.paddingBottom
+                                v.paddingLeft,
+                                v.paddingTop + statusBarHeight - fitsHeight,
+                                v.paddingRight,
+                                v.paddingBottom
                             )
-                            v.layoutParams = layoutParams
-                        }
+                            v.layoutParams = finalLayoutParams
+                        })
+                    } else {
+                        layoutParams.height += statusBarHeight - fitsHeight
+                        v.setPadding(
+                            v.paddingLeft, v.paddingTop + statusBarHeight - fitsHeight,
+                            v.paddingRight, v.paddingBottom
+                        )
+                        v.layoutParams = layoutParams
                     }
                 }
             }
@@ -2535,38 +2535,40 @@ class ImmersionBar(
          * @param fixHeight the fix height
          * @param view      the view
          */
-        fun setTitleBarMarginTop(activity: AppCompatActivity?, fixHeight: Int, vararg view: View?) {
+        fun setTitleBarMarginTop(
+            activity: AppCompatActivity?,
+            fixHeight: Int,
+            vararg view: View?
+        ) {
             var fixHeight = fixHeight
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                if (activity == null) {
-                    return
+            if (activity == null) {
+                return
+            }
+            if (fixHeight < 0) {
+                fixHeight = 0
+            }
+            for (v in view) {
+                if (v == null) {
+                    continue
                 }
-                if (fixHeight < 0) {
-                    fixHeight = 0
-                }
-                for (v in view) {
-                    if (v == null) {
-                        continue
-                    }
-                    val fitsHeight = v.getTag(R.id.immersion_fits_layout_overlap) as Int
-                    if (fitsHeight != fixHeight) {
-                        v.setTag(R.id.immersion_fits_layout_overlap, fixHeight)
-                        var lp = v.layoutParams
-                        if (lp == null) {
-                            lp = MarginLayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT
-                            )
-                        }
-                        val layoutParams = lp as MarginLayoutParams
-                        layoutParams.setMargins(
-                            layoutParams.leftMargin,
-                            layoutParams.topMargin + fixHeight - fitsHeight,
-                            layoutParams.rightMargin,
-                            layoutParams.bottomMargin
+                val fitsHeight = v.getTag(R.id.immersion_fits_layout_overlap) as Int
+                if (fitsHeight != fixHeight) {
+                    v.setTag(R.id.immersion_fits_layout_overlap, fixHeight)
+                    var lp = v.layoutParams
+                    if (lp == null) {
+                        lp = MarginLayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
                         )
-                        v.layoutParams = layoutParams
                     }
+                    val layoutParams = lp as MarginLayoutParams
+                    layoutParams.setMargins(
+                        layoutParams.leftMargin,
+                        layoutParams.topMargin + fixHeight - fitsHeight,
+                        layoutParams.rightMargin,
+                        layoutParams.bottomMargin
+                    )
+                    v.layoutParams = layoutParams
                 }
             }
         }
@@ -2587,7 +2589,11 @@ class ImmersionBar(
         }
 
         fun setTitleBarMarginTop(fragment: Fragment, fixHeight: Int, vararg view: View?) {
-            setTitleBarMarginTop(fragment.requireActivity() as AppCompatActivity, fixHeight, *view)
+            setTitleBarMarginTop(
+                fragment.requireActivity() as AppCompatActivity,
+                fixHeight,
+                *view
+            )
         }
 
         fun setTitleBarMarginTop(fragment: Fragment, vararg view: View?) {
@@ -2605,24 +2611,22 @@ class ImmersionBar(
          */
         fun setStatusBarView(activity: AppCompatActivity, fixHeight: Int, vararg view: View?) {
             var fixHeight = fixHeight
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                if (fixHeight < 0) {
-                    fixHeight = 0
+            if (fixHeight < 0) {
+                fixHeight = 0
+            }
+            for (v in view) {
+                if (v == null) {
+                    continue
                 }
-                for (v in view) {
-                    if (v == null) {
-                        continue
+                val fitsHeight = v.getTag(R.id.immersion_fits_layout_overlap) as Int
+                if (fitsHeight != fixHeight) {
+                    v.setTag(R.id.immersion_fits_layout_overlap, fixHeight)
+                    var lp = v.layoutParams
+                    if (lp == null) {
+                        lp = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0)
                     }
-                    val fitsHeight = v.getTag(R.id.immersion_fits_layout_overlap) as Int
-                    if (fitsHeight != fixHeight) {
-                        v.setTag(R.id.immersion_fits_layout_overlap, fixHeight)
-                        var lp = v.layoutParams
-                        if (lp == null) {
-                            lp = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0)
-                        }
-                        lp.height = fixHeight
-                        v.layoutParams = lp
-                    }
+                    lp.height = fixHeight
+                    v.layoutParams = lp
                 }
             }
         }
@@ -2674,7 +2678,10 @@ class ImmersionBar(
             if (fragment == null) {
                 return
             }
-            setFitsSystemWindows(fragment.requireActivity() as AppCompatActivity, applySystemFits)
+            setFitsSystemWindows(
+                fragment.requireActivity() as AppCompatActivity,
+                applySystemFits
+            )
         }
 
         fun setFitsSystemWindows(fragment: Fragment?) {

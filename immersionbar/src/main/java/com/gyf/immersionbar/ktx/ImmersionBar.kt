@@ -14,27 +14,25 @@ import com.gyf.immersionbar.ImmersionBar
  */
 
 // 初始化ImmersionBar
-inline fun AppCompatActivity.immersionBar(block: ImmersionBar?.() -> Unit) =
-    ImmersionBar.with(this).apply { block(this) }?.init()
+inline fun AppCompatActivity.immersionBar(block: ImmersionBar.() -> Unit) =
+    ImmersionBar.with(this).apply { block(this) }.init()
 
-inline fun Fragment.immersionBar(block: ImmersionBar?.() -> Unit) =
-    ImmersionBar.with(this).apply { block(this) }?.init()
+inline fun Fragment.immersionBar(block: ImmersionBar.() -> Unit) =
+    ImmersionBar.with(this).apply { block(this) }.init()
 
-inline fun DialogFragment.immersionBar(block: ImmersionBar?.() -> Unit) =
-    ImmersionBar.with(this).apply { block(this) }?.init()
+inline fun DialogFragment.immersionBar(block: ImmersionBar.() -> Unit) =
+    ImmersionBar.with(this).apply { block(this) }.init()
 
-inline fun Dialog.immersionBar(activity: AppCompatActivity, block: ImmersionBar?.() -> Unit) =
-    ImmersionBar.with(activity, this).apply { block(this) }?.init()
+inline fun Dialog.immersionBar(activity: AppCompatActivity, block: ImmersionBar.() -> Unit) =
+    ImmersionBar.with(activity, this).apply { block(this) }.init()
 
-inline fun AppCompatActivity.immersionBar(dialog: Dialog, block: ImmersionBar?.() -> Unit) =
-    ImmersionBar.with(this, dialog).apply { block(this) }?.init()
+inline fun AppCompatActivity.immersionBar(dialog: Dialog, block: ImmersionBar.() -> Unit) =
+    ImmersionBar.with(this, dialog).apply { block(this) }.init()
 
-inline fun Fragment.immersionBar(dialog: Dialog, block: ImmersionBar?.() -> Unit) =
+inline fun Fragment.immersionBar(dialog: Dialog, block: ImmersionBar.() -> Unit) =
     (activity as AppCompatActivity).run {
-        ImmersionBar.with(this, dialog).apply { block(this) }?.init()
+        ImmersionBar.with(this, dialog).apply { block(this) }.init()
     }
-        ?: Unit
-
 
 fun AppCompatActivity.immersionBar() = immersionBar { }
 
@@ -56,7 +54,6 @@ fun AppCompatActivity.destroyImmersionBar(dialog: Dialog) = ImmersionBar.destroy
 
 fun Fragment.destroyImmersionBar(dialog: Dialog) =
     (activity as AppCompatActivity).run { ImmersionBar.destroy(this, dialog) }
-        ?: Unit
 
 // 状态栏扩展
 val AppCompatActivity.statusBarHeight get() = ImmersionBar.getStatusBarHeight(this)
@@ -127,18 +124,12 @@ fun Fragment.fitsTitleBarMarginTop(vararg view: View) =
 // 隐藏状态栏
 fun Activity.hideStatusBar() = ImmersionBar.hideStatusBar(window)
 
-fun Fragment.hideStatusBar() = activity?.run { ImmersionBar.hideStatusBar(window) } ?: Unit
-
-fun android.app.Fragment.hideStatusBar() = activity?.run { ImmersionBar.hideStatusBar(window) }
-    ?: Unit
+fun Fragment.hideStatusBar() = requireActivity().run { ImmersionBar.hideStatusBar(window) }
 
 // 显示状态栏
 fun Activity.showStatusBar() = ImmersionBar.showStatusBar(window)
 
-fun Fragment.showStatusBar() = activity?.run { ImmersionBar.showStatusBar(window) } ?: Unit
-
-fun android.app.Fragment.showStatusBar() = activity?.run { ImmersionBar.showStatusBar(window) }
-    ?: Unit
+fun Fragment.showStatusBar() = requireActivity().run { ImmersionBar.showStatusBar(window) }
 
 // 解决顶部与布局重叠问题，不可逆
 fun AppCompatActivity.setFitsSystemWindows() = ImmersionBar.setFitsSystemWindows(this)

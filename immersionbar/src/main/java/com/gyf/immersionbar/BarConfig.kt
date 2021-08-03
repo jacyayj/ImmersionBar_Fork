@@ -12,6 +12,7 @@ import android.provider.Settings
 import android.util.DisplayMetrics
 import android.util.TypedValue
 import android.view.*
+import androidx.appcompat.app.AppCompatActivity
 
 /**
  * The type Bar config.
@@ -19,7 +20,7 @@ import android.view.*
  * @author geyifeng
  * @date 2017 /5/11
  */
-class BarConfig(activity: Activity) {
+class BarConfig(activity: AppCompatActivity) {
     /**
      * Get the height of the system status bar.
      *
@@ -55,19 +56,17 @@ class BarConfig(activity: Activity) {
     @TargetApi(14)
     fun getActionBarHeight(activity: Activity): Int {
         var result = 0
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            val actionBar = activity.window.findViewById<View>(R.id.action_bar_container)
-            if (actionBar != null) {
-                result = actionBar.measuredHeight
-            }
-            if (result == 0) {
-                val tv = TypedValue()
-                activity.theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)
-                result = TypedValue.complexToDimensionPixelSize(
-                    tv.data,
-                    activity.resources.displayMetrics
-                )
-            }
+        val actionBar = activity.window.findViewById<View>(R.id.action_bar_container)
+        if (actionBar != null) {
+            result = actionBar.measuredHeight
+        }
+        if (result == 0) {
+            val tv = TypedValue()
+            activity.theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)
+            result = TypedValue.complexToDimensionPixelSize(
+                tv.data,
+                activity.resources.displayMetrics
+            )
         }
         return result
     }
@@ -75,15 +74,13 @@ class BarConfig(activity: Activity) {
     @TargetApi(14)
     fun getNavigationBarHeight(context: Context?): Int {
         val result = 0
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            if (hasNavBar(context as Activity?)) {
-                val key: String = if (mInPortrait) {
-                    Constants.IMMERSION_NAVIGATION_BAR_HEIGHT
-                } else {
-                    Constants.IMMERSION_NAVIGATION_BAR_HEIGHT_LANDSCAPE
-                }
-                return getInternalDimensionSize(context, key)
+        if (hasNavBar(context as Activity?)) {
+            val key: String = if (mInPortrait) {
+                Constants.IMMERSION_NAVIGATION_BAR_HEIGHT
+            } else {
+                Constants.IMMERSION_NAVIGATION_BAR_HEIGHT_LANDSCAPE
             }
+            return getInternalDimensionSize(context, key)
         }
         return result
     }
@@ -91,56 +88,41 @@ class BarConfig(activity: Activity) {
     @TargetApi(14)
     fun getNavigationBarWidth(context: Context?): Int {
         val result = 0
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            if (hasNavBar(context as Activity?)) {
-                return getInternalDimensionSize(context, Constants.IMMERSION_NAVIGATION_BAR_WIDTH)
-            }
+        if (hasNavBar(context as Activity?)) {
+            return getInternalDimensionSize(context, Constants.IMMERSION_NAVIGATION_BAR_WIDTH)
         }
         return result
     }
 
     @TargetApi(14)
     private fun hasNavBar(activity: Activity?): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            //判断小米手机是否开启了全面屏，开启了，直接返回false
-            if (Settings.Global.getInt(
-                    activity!!.contentResolver,
-                    Constants.IMMERSION_MIUI_NAVIGATION_BAR_HIDE_SHOW,
-                    0
-                ) != 0
-            ) {
-                return false
-            }
-            //判断华为手机是否隐藏了导航栏，隐藏了，直接返回false
-            if (OSUtils.isEMUI) {
-                if (OSUtils.isEMUI3_x || Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                    if (Settings.System.getInt(
-                            activity.contentResolver,
-                            Constants.IMMERSION_EMUI_NAVIGATION_BAR_HIDE_SHOW,
-                            0
-                        ) != 0
-                    ) {
-                        return false
-                    }
-                } else {
-                    if (Settings.Global.getInt(
-                            activity.contentResolver,
-                            Constants.IMMERSION_EMUI_NAVIGATION_BAR_HIDE_SHOW,
-                            0
-                        ) != 0
-                    ) {
-                        return false
-                    }
+        //判断小米手机是否开启了全面屏，开启了，直接返回false
+        if (Settings.Global.getInt(
+                activity!!.contentResolver,
+                Constants.IMMERSION_MIUI_NAVIGATION_BAR_HIDE_SHOW,
+                0
+            ) != 0
+        ) {
+            return false
+        }
+        //判断华为手机是否隐藏了导航栏，隐藏了，直接返回false
+        if (OSUtils.isEMUI) {
+            if (OSUtils.isEMUI3_x) {
+                if (Settings.System.getInt(
+                        activity.contentResolver,
+                        Constants.IMMERSION_EMUI_NAVIGATION_BAR_HIDE_SHOW,
+                        0
+                    ) != 0
+                ) {
+                    return false
                 }
             }
         }
         //其他手机根据屏幕真实高度与显示高度是否相同来判断
-        val windowManager = activity!!.windowManager
+        val windowManager = activity.windowManager
         val d = windowManager.defaultDisplay
         val realDisplayMetrics = DisplayMetrics()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            d.getRealMetrics(realDisplayMetrics)
-        }
+        d.getRealMetrics(realDisplayMetrics)
         val realHeight = realDisplayMetrics.heightPixels
         val realWidth = realDisplayMetrics.widthPixels
         val displayMetrics = DisplayMetrics()
@@ -173,16 +155,12 @@ class BarConfig(activity: Activity) {
     }
 
     @SuppressLint("NewApi")
-    private fun getSmallestWidthDp(activity: Activity?): Float {
+    private fun getSmallestWidthDp(activity: AppCompatActivity): Float {
         val metrics = DisplayMetrics()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            activity!!.windowManager.defaultDisplay.getRealMetrics(metrics)
-        } else {
-            activity!!.windowManager.defaultDisplay.getMetrics(metrics)
-        }
+            activity.windowManager.defaultDisplay.getRealMetrics(metrics)
         val widthDp = metrics.widthPixels / metrics.density
         val heightDp = metrics.heightPixels / metrics.density
-        return Math.min(widthDp, heightDp)
+        return widthDp.coerceAtMost(heightDp)
     }
 
     /**

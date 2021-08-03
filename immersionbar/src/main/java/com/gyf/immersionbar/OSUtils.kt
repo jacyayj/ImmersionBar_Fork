@@ -2,6 +2,7 @@ package com.gyf.immersionbar
 
 import android.annotation.SuppressLint
 import android.text.TextUtils
+import java.util.*
 
 /**
  * 手机系统判断
@@ -120,7 +121,7 @@ object OSUtils {
      * @return the boolean
      */
     val isFlymeOS: Boolean
-        get() = flymeOSFlag.toLowerCase().contains("flyme")
+        get() = flymeOSFlag.lowercase(Locale.getDefault()).contains("flyme")
 
     /**
      * 判断flymeOS的版本是否大于等于4
@@ -132,9 +133,9 @@ object OSUtils {
         get() {
             val version = flymeOSVersion
             val num: Int
-            return if (!version.isEmpty()) {
+            return if (version.isNotEmpty()) {
                 try {
-                    num = if (version.toLowerCase().contains("os")) {
+                    num = if (version.lowercase(Locale.getDefault()).contains("os")) {
                         Integer.valueOf(version.substring(9, 10))
                     } else {
                         Integer.valueOf(version.substring(6, 7))
@@ -156,9 +157,9 @@ object OSUtils {
         get() {
             val version = flymeOSVersion
             val num: Int
-            return if (!version.isEmpty()) {
+            return if (version.isNotEmpty()) {
                 try {
-                    num = if (version.toLowerCase().contains("os")) {
+                    num = if (version.lowercase(Locale.getDefault()).contains("os")) {
                         Integer.valueOf(version.substring(9, 10))
                     } else {
                         Integer.valueOf(version.substring(6, 7))
@@ -179,7 +180,7 @@ object OSUtils {
     val flymeOSVersion: String
         get() = if (isFlymeOS) getSystemProperty(KEY_DISPLAY, "") else ""
     private val flymeOSFlag: String
-        private get() = getSystemProperty(KEY_DISPLAY, "")
+        get() = getSystemProperty(KEY_DISPLAY, "")
 
     private fun getSystemProperty(key: String, defaultValue: String): String {
         try {

@@ -7,7 +7,6 @@ import android.os.Message
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import java.util.*
 
@@ -31,9 +30,9 @@ internal object RequestManagerRetriever : Handler.Callback {
      * @param activity the activity
      * @return the immersion bar
      */
-    operator fun get(activity: AppCompatActivity): ImmersionBar? {
+    operator fun get(activity: AppCompatActivity): ImmersionBar {
         val tag = mTag + System.identityHashCode(activity)
-        return getSupportFragment(activity.supportFragmentManager, tag)?.get(activity)
+        return getSupportFragment(activity.supportFragmentManager, tag)[activity]
     }
 
     /**
@@ -43,10 +42,10 @@ internal object RequestManagerRetriever : Handler.Callback {
      * @param isOnly   the is only
      * @return the immersion bar
      */
-    operator fun get(fragment: Fragment, isOnly: Boolean): ImmersionBar? {
-        checkNotNull(fragment.activity, { "fragment.getActivity() is null" })
+    operator fun get(fragment: Fragment, isOnly: Boolean): ImmersionBar {
+        checkNotNull(fragment.requireActivity(), { "fragment.getActivity() is null" })
         if (fragment is DialogFragment) {
-            checkNotNull(fragment.dialog, { "fragment.getDialog() is null" })
+            checkNotNull(fragment.requireDialog(), { "fragment.getDialog() is null" })
         }
         var tag = mTag
         if (isOnly) {
@@ -54,7 +53,7 @@ internal object RequestManagerRetriever : Handler.Callback {
         } else {
             tag += System.identityHashCode(fragment)
         }
-        return getSupportFragment(fragment.childFragmentManager, tag)!![fragment]
+        return getSupportFragment(fragment.childFragmentManager, tag)[fragment]
     }
 
 
@@ -65,9 +64,9 @@ internal object RequestManagerRetriever : Handler.Callback {
      * @param dialog   the dialog
      * @return the immersion bar
      */
-    operator fun get(activity: AppCompatActivity, dialog: Dialog): ImmersionBar? {
+    operator fun get(activity: AppCompatActivity, dialog: Dialog): ImmersionBar {
         val tag = mTag + System.identityHashCode(dialog)
-        return getSupportFragment(activity.supportFragmentManager, tag)?.get(activity, dialog)
+        return getSupportFragment(activity.supportFragmentManager, tag)[activity, dialog]
     }
 
     /**
@@ -97,9 +96,7 @@ internal object RequestManagerRetriever : Handler.Callback {
     fun destroy(activity: AppCompatActivity, dialog: Dialog?) {
         val tag = mTag + System.identityHashCode(dialog)
         val fragment = getSupportFragment(activity.supportFragmentManager, tag, true)
-        if (fragment != null) {
-            fragment[activity, dialog]!!.onDestroy()
-        }
+        fragment[activity, dialog].onDestroy()
     }
 
     override fun handleMessage(msg: Message): Boolean {
@@ -118,7 +115,7 @@ internal object RequestManagerRetriever : Handler.Callback {
         return handled
     }
 
-    private fun getFragment(fm: FragmentManager, tag: String): Fragment? {
+    private fun getFragment(fm: FragmentManager, tag: String): Fragment {
         return getFragment(fm, tag, false)
     }
 
@@ -126,14 +123,12 @@ internal object RequestManagerRetriever : Handler.Callback {
         fm: FragmentManager,
         tag: String,
         destroy: Boolean
-    ): Fragment? {
+    ): Fragment {
         var fragment: Fragment? = fm.findFragmentByTag(tag)
         if (fragment == null) {
             fragment = mPendingFragments[fm]
             if (fragment == null) {
-                if (destroy) {
-                    return null
-                }
+                if (destroy) throw InterruptedException("FRAGMENT IS DESTROY")
                 fragment = RequestManagerFragment()
                 mPendingFragments[fm] = fragment
                 fm.beginTransaction().add(fragment, tag).commitAllowingStateLoss()
@@ -142,7 +137,7 @@ internal object RequestManagerRetriever : Handler.Callback {
         }
         if (destroy) {
             fm.beginTransaction().remove(fragment).commitAllowingStateLoss()
-            return null
+            throw InterruptedException("FRAGMENT IS DESTROY")
         }
         return fragment
     }
@@ -150,7 +145,7 @@ internal object RequestManagerRetriever : Handler.Callback {
     private fun getSupportFragment(
         fm: FragmentManager,
         tag: String
-    ): SupportRequestManagerFragment? {
+    ): SupportRequestManagerFragment {
         return getSupportFragment(fm, tag, false)
     }
 
@@ -158,14 +153,13 @@ internal object RequestManagerRetriever : Handler.Callback {
         fm: FragmentManager,
         tag: String,
         destroy: Boolean
-    ): SupportRequestManagerFragment? {
+    ): SupportRequestManagerFragment {
         var fragment = fm.findFragmentByTag(tag) as SupportRequestManagerFragment?
         if (fragment == null) {
             fragment = mPendingSupportFragments[fm]
             if (fragment == null) {
-                if (destroy) {
-                    return null
-                }
+                if (destroy) throw InterruptedException("FRAGMENT IS DESTROY")
+
                 fragment = SupportRequestManagerFragment()
                 mPendingSupportFragments[fm] = fragment
                 fm.beginTransaction().add(fragment, tag).commitAllowingStateLoss()
@@ -174,7 +168,7 @@ internal object RequestManagerRetriever : Handler.Callback {
         }
         if (destroy) {
             fm.beginTransaction().remove(fragment).commitAllowingStateLoss()
-            return null
+            throw InterruptedException("FRAGMENT IS DESTROY")
         }
         return fragment
     }

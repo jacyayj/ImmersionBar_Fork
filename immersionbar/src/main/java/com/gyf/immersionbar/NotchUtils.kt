@@ -57,7 +57,7 @@ object NotchUtils {
      * @param activity the activity
      * @return the boolean
      */
-    fun hasNotchScreen(activity: Activity?): Boolean {
+    fun hasNotchScreen(activity: AppCompatActivity): Boolean {
         return activity != null && (hasNotchAtXiaoMi(activity) ||
                 hasNotchAtHuaWei(activity) ||
                 hasNotchAtOPPO(activity) ||
@@ -72,12 +72,12 @@ object NotchUtils {
      * @param view the view
      * @return the boolean
      */
-    fun hasNotchScreen(view: View?): Boolean {
-        return view != null && (hasNotchAtXiaoMi(view.context) ||
+    fun hasNotchScreen(view: View): Boolean {
+        return hasNotchAtXiaoMi(view.context) ||
                 hasNotchAtHuaWei(view.context) ||
                 hasNotchAtOPPO(view.context) ||
                 hasNotchAtVIVO(view.context) ||
-                hasNotchAtAndroidP(view))
+                hasNotchAtAndroidP(view)
     }
 
     /**
@@ -86,9 +86,12 @@ object NotchUtils {
      * @param view the view
      * @return the boolean
      */
-    @RequiresApi(Build.VERSION_CODES.P)
     private fun hasNotchAtAndroidP(view: View): Boolean {
-        return getDisplayCutout(view) != null
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            getDisplayCutout(view) != null
+        } else {
+            false
+        }
     }
 
     /**
@@ -98,9 +101,12 @@ object NotchUtils {
      * @param activity the activity
      * @return the boolean
      */
-    @RequiresApi(Build.VERSION_CODES.P)
     private fun hasNotchAtAndroidP(activity: Activity): Boolean {
-        return getDisplayCutout(activity) != null
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            getDisplayCutout(activity) != null
+        } else {
+            false
+        }
     }
 
     /**

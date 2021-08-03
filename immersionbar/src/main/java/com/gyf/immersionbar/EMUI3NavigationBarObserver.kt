@@ -2,7 +2,6 @@ package com.gyf.immersionbar
 
 import android.app.Application
 import android.database.ContentObserver
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
@@ -22,7 +21,7 @@ internal object EMUI3NavigationBarObserver : ContentObserver(Handler(Looper.getM
 
     fun register(application: Application) {
         mApplication = application
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && mApplication.contentResolver != null && !mIsRegister) {
+        if (mApplication.contentResolver != null && !mIsRegister) {
             val uri = Settings.System.getUriFor(Constants.IMMERSION_EMUI_NAVIGATION_BAR_HIDE_SHOW)
             if (uri != null) {
                 mApplication.contentResolver.registerContentObserver(uri, true, this)
@@ -33,7 +32,7 @@ internal object EMUI3NavigationBarObserver : ContentObserver(Handler(Looper.getM
 
     override fun onChange(selfChange: Boolean) {
         super.onChange(selfChange)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && mApplication.contentResolver != null && mCallbacks != null && !mCallbacks!!.isEmpty()) {
+        if (mApplication.contentResolver != null && mCallbacks != null && mCallbacks!!.isNotEmpty()) {
             val show = Settings.System.getInt(
                 mApplication.contentResolver,
                 Constants.IMMERSION_EMUI_NAVIGATION_BAR_HIDE_SHOW,

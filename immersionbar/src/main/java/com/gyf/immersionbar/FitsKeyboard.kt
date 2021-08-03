@@ -1,7 +1,6 @@
 package com.gyf.immersionbar
 
 import android.graphics.Rect
-import android.os.Build
 import android.view.View
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.view.Window
@@ -16,8 +15,8 @@ import com.gyf.immersionbar.ImmersionBar
  * @date 2018/11/9 10:24 PM
  */
 internal class FitsKeyboard(private val immersionBar: ImmersionBar) : OnGlobalLayoutListener {
-    private val mWindow: Window?
-    private val mDecorView: View
+    private val mWindow: Window? = immersionBar.window
+    private val mDecorView: View = mWindow!!.decorView
     private val mContentView: View
     private var mChildView: View? = null
     private var mPaddingLeft = 0
@@ -27,17 +26,15 @@ internal class FitsKeyboard(private val immersionBar: ImmersionBar) : OnGlobalLa
     private var mTempKeyboardHeight = 0
     private var mIsAddListener = false
     fun enable(mode: Int) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            mWindow!!.setSoftInputMode(mode)
-            if (!mIsAddListener) {
-                mDecorView.viewTreeObserver.addOnGlobalLayoutListener(this)
-                mIsAddListener = true
-            }
+        mWindow!!.setSoftInputMode(mode)
+        if (!mIsAddListener) {
+            mDecorView.viewTreeObserver.addOnGlobalLayoutListener(this)
+            mIsAddListener = true
         }
     }
 
     fun disable() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && mIsAddListener) {
+        if (mIsAddListener) {
             if (mChildView != null) {
                 mContentView.setPadding(mPaddingLeft, mPaddingTop, mPaddingRight, mPaddingBottom)
             } else {
@@ -52,7 +49,7 @@ internal class FitsKeyboard(private val immersionBar: ImmersionBar) : OnGlobalLa
     }
 
     fun cancel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && mIsAddListener) {
+        if (mIsAddListener) {
             mDecorView.viewTreeObserver.removeOnGlobalLayoutListener(this)
             mIsAddListener = false
         }
@@ -64,7 +61,7 @@ internal class FitsKeyboard(private val immersionBar: ImmersionBar) : OnGlobalLa
             var bottom = 0
             var keyboardHeight: Int
             val navigationBarHeight =
-                if (barConfig!!.isNavigationAtBottom) barConfig.navigationBarHeight else barConfig.navigationBarWidth
+                if (barConfig.isNavigationAtBottom) barConfig.navigationBarHeight else barConfig.navigationBarWidth
             var isPopup = false
             val rect = Rect()
             //获取当前窗口可视区域大小
@@ -127,8 +124,6 @@ internal class FitsKeyboard(private val immersionBar: ImmersionBar) : OnGlobalLa
     }
 
     init {
-        mWindow = immersionBar.window
-        mDecorView = mWindow!!.decorView
         val frameLayout = mDecorView.findViewById<FrameLayout>(android.R.id.content)
         if (immersionBar.isDialogFragment) {
             val supportFragment = immersionBar.dialogFragment
